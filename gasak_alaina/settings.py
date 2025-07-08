@@ -94,10 +94,15 @@ AUTH_USER_MODEL = 'users.User'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'gasdb',
+        'USER': 'gas',
+        'PASSWORD': 'CjZ2NSVmJ9j8tHEevDT0qFYdeJmPNmxY',
+        'HOST': 'dpg-d1mp137fte5s739ih1v0-a',
+        'PORT': '5432',
     }
 }
+
 
 
 # Password validation
