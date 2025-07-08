@@ -29,6 +29,52 @@ class UserRegistrationView(APIView):
 
 
 
+
+
+class OrderHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        orders = GasOrder.objects.filter(customer=user).order_by('-order_time')
+        serializer = GasOrderHistorySerializer(orders, many=True)
+        return Response(serializer.data)
+    
+
+class UserProfileUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)
+
+    def put(self, request):
+        serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ActiveOrderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        active_order = GasOrder.objects.filter(
+            customer=user,
+            status__in=['pending', 'assigned']
+        ).order_by('-order_time').first()
+
+        if not active_order:
+            return Response({"detail": "لا يوجد طلب نشط حاليا"}, status=200)
+
+        serializer = ActiveGasOrderSerializer(active_order)
+        return Response(serializer.data)
+
+
+
+
 class GasOrderCreateView(APIView):
     
 
@@ -92,49 +138,6 @@ class AcceptGasOrderView(APIView):
             return Response({"detail": "تم قبول الطلب بنجاح"}, status=status.HTTP_200_OK)
         except GasOrder.DoesNotExist:
             return Response({"detail": "الطلب غير موجود"}, status=status.HTTP_404_NOT_FOUND)
-
-
-class OrderHistoryView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-        orders = GasOrder.objects.filter(customer=user).order_by('-order_time')
-        serializer = GasOrderHistorySerializer(orders, many=True)
-        return Response(serializer.data)
-    
-
-class UserProfileUpdateView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data)
-
-    def put(self, request):
-        serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ActiveOrderView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-        active_order = GasOrder.objects.filter(
-            customer=user,
-            status__in=['pending', 'assigned']
-        ).order_by('-order_time').first()
-
-        if not active_order:
-            return Response({"detail": "لا يوجد طلب نشط حاليا"}, status=200)
-
-        serializer = ActiveGasOrderSerializer(active_order)
-        return Response(serializer.data)
-
 
 
 

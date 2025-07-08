@@ -6,14 +6,16 @@ from django.conf import settings
 
 
 class User(AbstractUser):
+    fullname = models.CharField(max_length=60, blank=True)  # اسم الحارة
     phone_number = models.CharField(max_length=15, unique=True)
     fixed_location_lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     fixed_location_lon = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     neighborhood = models.CharField(max_length=100, null=True, blank=True)  # اسم الحارة
     location_notes = models.TextField(null=True, blank=True)  # ملاحظات عن الموقع
+    email = models.EmailField(unique=True)
 
     def __str__(self): 
-        return self.username
+        return self.full_name or self.username  
     
 
 
@@ -45,6 +47,21 @@ class GasOrder(models.Model):
 class Driver(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     carnumber = models.CharField(max_length=15, unique=True)
+    Identitynumber = models.CharField(max_length=15, unique=True)
+
 
     def __str__(self):
         return self.user.username
+
+
+
+
+
+class DriverLocation(models.Model):
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='locations')
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
+    notes = models.TextField(null=True, blank=True)  # ملاحظات عن الموقع إذا احتجت
+
+    def __str__(self):
+        return f"{self.driver.user.username} - {self.latitude}, {self.longitude}"
